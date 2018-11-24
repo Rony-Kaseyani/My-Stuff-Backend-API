@@ -21,7 +21,7 @@ module.exports = {
         type: Sequelize.STRING
       },
       price: {
-        type: Sequelize.INTEGER
+        type: Sequelize.DECIMAL(10,2)
       },
       city: {
         type: Sequelize.STRING
@@ -29,7 +29,7 @@ module.exports = {
       published: {
         type: Sequelize.BOOLEAN
       },
-      image: {
+      image_path: {
         type: Sequelize.STRING
       },
       video: {

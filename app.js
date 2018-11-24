@@ -7,7 +7,7 @@ const logger = require('morgan')
 const methodOverride = require('method-override')
 const hbs = require('express-handlebars')
 const errorhandler = require('errorhandler')
-const models = require('./models');
+const models = require('./models')
 
 // init express app
 const app = express()
