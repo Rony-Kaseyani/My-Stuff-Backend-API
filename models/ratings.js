@@ -1,10 +1,16 @@
-'use strict';
+'use strict'
 module.exports = (sequelize, DataTypes) => {
-  const Ratings = sequelize.define('Ratings', {
-    rating: DataTypes.INTEGER
-  }, {});
+  const Ratings = sequelize.define(
+    'Ratings',
+    {
+      rating: DataTypes.INTEGER
+    },
+    {}
+  )
   Ratings.associate = function(models) {
     // associations can be defined here
-  };
-  return Ratings;
-};
+    Ratings.belongsTo(models.user)
+    Ratings.belongsTo(models.Items)
+  }
+  return Ratings
+}
