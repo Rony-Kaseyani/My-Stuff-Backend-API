@@ -1,39 +1,65 @@
+/// dependencies
 const router = require('express').Router()
-const user = require('../models/user')
+const models = require('../models/')
 const passport = require('passport')
+const isLoggedIn = require('./util').isLoggedIn
+const routesErrorHandler = require('./util').routesErrorHandler
 
-router.get('/register', (req, res) => res.render('user-registration-form'))
+/// user routes
+// dashboard with list of products associated to the logged in user
+router.get(
+  '/dashboard',
+  isLoggedIn,
+  routesErrorHandler(async (req, res, next) => {
+    const items = await models.Items.findAll({
+      where: {
+        userId: req.user.id
+      }
+    })
+    return res.status(200).send(JSON.stringify({ products: items }))
+  })
+)
 
-router.get('/login', (req, res) => res.render('login-form'))
+// getting login form
+router.get('/login', async (req, res) => res.status(200))
 
-router.get('/dashboard', isLoggedIn, (req, res) => res.render('/'))
+// post request for login
+router.post(
+  '/login',
+  passport.authenticate('local-signin', {
+    failureRedirect: '/users/login'
+  }),
+  async (req, res) => {
+    req.checkBody('email', 'Enter a valid email address').isEmail()
 
-router.get('/logout', (req, res) => res.render('/'))
+    if (req.user.is_admin === true) {
+      return res.status(302).redirect('/admin/items')
+    } else {
+      return res.status(302).redirect('/users/dashboard')
+    }
+  }
+)
 
-router.post('/register', passport.authenticate('local-signup', {
-    successRedirect: '/dashboard',
+// getting form for user registration
+router.get('/register', async (req, res) => res.status(200))
 
-    failureRedirect: '/register'
-}
+// post request for registering user
+router.post(
+  '/register',
+  passport.authenticate('local-signup', {
+    failureRedirect: '/users/register'
+  }),
+  async (req, res) => {
+    await req.checkBody('email', 'Enter a valid email address').isEmail()
+    return res.status(302).redirect('/users/dashboard')
+  }
+)
 
-))
-
-router.post('/login', passport.authenticate('local-signin', {
-    successRedirect: '/dashboard',
-
-    failureRedirect: '/login'
-}
-
-))
-
-function isLoggedIn(req, res, next) {
-
-    if (req.isAuthenticated())
-
-        return next();
-
-    res.redirect('/login');
-
-}
+// logging user out and destroying session
+router.get('/logout', isLoggedIn, async (req, res) => {
+  req.session.destroy()
+  req.logout()
+  return res.status(302).redirect('/')
+})
 
 module.exports = router

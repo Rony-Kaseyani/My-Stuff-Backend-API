@@ -1,36 +1,59 @@
 {
-  "name": "buhasior-my-stuff",
+  "name": "buhasior-local-news",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node ./app.js",
-    "start:dev": "nodemon ./app.js"
-  },
+  "main": "server.js",
   "author": "Ronald Buhasio",
-  "license": "ISC",
+  "scripts": {
+    "test": "jest --runInBand --coverage --detectOpenHandles",
+    "start": "node ./server.js",
+    "start:dev": "nodemon ./server.js --exec \"npm run lint && node\"",
+    "lint": "eslint ./**/*.js"
+  },
   "dependencies": {
     "bcrypt-nodejs": "0.0.3",
     "body-parser": "^1.18.3",
     "compression": "^1.7.3",
     "errorhandler": "^1.5.0",
     "express": "^4.16.4",
-    "express-handlebars": "^3.0.0",
     "express-session": "^1.15.6",
-    "g": "^2.0.1",
+    "express-validator": "^5.3.0",
     "method-override": "^3.0.0",
     "morgan": "^1.9.1",
     "multer": "^1.4.1",
-    "mysql": "^2.16.0",
     "mysql2": "^1.6.4",
+    "nodemailer": "^4.7.0",
     "passport": "^0.4.0",
     "passport-local": "^1.0.0",
-    "path": "^0.12.7",
+    "pg": "^7.7.1",
     "sequelize": "^4.41.0",
-    "sequelize-cli": "^5.3.0"
+    "sequelize-cli": "^5.3.0",
+    "sequelize-typescript": "^0.6.6",
+    "showdown": "^1.9.0"
   },
   "devDependencies": {
-    "nodemon": "^1.18.5"
+    "eslint": "4.18.2",
+    "eslint-config-prettier": "2.9.0",
+    "eslint-plugin-prettier": "2.6.0",
+    "jest": "^23.6.0",
+    "jest-express": "^1.9.0",
+    "nodemon": "^1.18.7",
+    "prettier": "^1.15.3",
+    "supertest": "^3.3.0"
+  },
+  "engines": {
+    "node": "10.13.0"
+  },
+  "jest": {
+    "roots": [
+      "<rootDir>/routes/__tests__/"
+    ],
+    "collectCoverage": true,
+    "bail": true,
+    "verbose": true,
+    "coverageReporters": [
+      "json",
+      "html"
+    ]
   }
 }
