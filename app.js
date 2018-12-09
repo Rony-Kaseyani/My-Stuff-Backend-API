@@ -1,48 +1,71 @@
 // Dependencies
-const express = require('express')
-const compression = require('compression')
-const bodyParser = require('body-parser')
-const passport = require('passport')
-const logger = require('morgan')
-const methodOverride = require('method-override')
-const hbs = require('express-handlebars')
-const errorhandler = require('errorhandler')
-const models = require('./models')
+const express = require("express");
+const compression = require("compression");
+const bodyParser = require("body-parser");
+const passport = require("passport");
+const logger = require("morgan");
+const methodOverride = require("method-override");
+const errorhandler = require("errorhandler");
+const models = require("./models");
+const session = require("express-session");
+const validator = require("express-validator");
 
 // init express app
-const app = express()
+const app = express();
 
-const isProduction = process.env.NODE_ENV === 'production'
+const isProduction = process.env.NODE_ENV === "production";
 
-app.use(express.static('public'))
-app.use(express.static('views'))
+app.use(express.static("public"));
+app.use(express.static("views"));
 
 /// express config
-app.use(compression())
-app.use(logger('dev'))
-app.use(bodyParser.urlencoded({ extended: false }))
-app.use(bodyParser.json())
-app.use(methodOverride())
-app.use(passport.initialize())
+app.use(compression());
+app.use(logger("dev"));
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
+app.use(validator());
+app.use(methodOverride());
 
-// template engine
-app.engine('handlebars', hbs({defaultLayout: "main"}))
-app.set('view engine', 'handlebars')
+app.use(
+  session({
+    secret: "keyboard cat",
+    resave: false,
+    saveUninitialized: false
+  })
+);
 
-app.use(require('./routes'))
+app.use(passport.initialize());
+app.use(passport.session());
+
+app.use(async (req, res, next) => {
+  // checking whether user is admin
+  app.locals.admin_user = req.user && req.user.is_admin;
+  // checking whether user is logged out
+  app.locals.logged_out = !req.isAuthenticated();
+  // checking whether user is logged in
+  app.locals.logged_in = req.isAuthenticated();
+  // retrieving all articles pinned by the admin
+  app.locals.pinned_articles = await models.News.findAll({
+    where: { approved: true, pinned: true }
+  });
+  // retrieving all categories to be used in our views to display navigation etc.
+  app.locals.categories = await models.Category.findAll();
+  next();
+});
+app.use(require("./routes"));
 
 //load passport strategies
-require('./config/passport/passport.js')(passport, models.user)
+require("./config/passport/passport.js")(passport, models.user);
 
 if (!isProduction) {
-    app.use(errorhandler())
+  app.use(errorhandler());
 }
 
 /// catch 404 and forward to error handler
 app.use((req, res, next) => {
-  let err = new Error('The requested page could not be found.')
-  err.status = 404
-  next(err)
+  let err = new Error("The requested page could not be found.");
+  err.status = 404;
+  next(err);
 });
 
 /// error handlers
@@ -51,28 +74,29 @@ app.use((req, res, next) => {
 // will print stacktrace
 if (!isProduction) {
   app.use((err, req, res, next) => {
-    console.log(err.stack)
+    console.log(err.stack);
 
-    res.status(err.status || 500)
+    res.status(err.status || 500);
 
-    res.render('error', {'errors': {
-      message: err.message,
-      error: err
-    }})
-  })
+    res.render("error", {
+      errors: {
+        message: err.message,
+        error: err
+      }
+    });
+  });
 }
 
 // production error handler
 // no stacktraces leaked to the client
 app.use((err, req, res, next) => {
   res.status(err.status || 500);
-  res.render('error', {'errors': {
-    message: err.message,
-    error: {}
-  }})
-})
+  res.render("error", {
+    errors: {
+      message: err.message,
+      error: {}
+    }
+  });
+});
 
-// starting the server...
-const server = app.listen( process.env.PORT || 4000, () => {
-  console.log('Listening on port ' + server.address().port)
-})
+module.exports = app;
