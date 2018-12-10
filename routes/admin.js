@@ -11,36 +11,7 @@ router.get(
   isAdmin,
   routesErrorHandler(async (req, res, next) => {
     const newsArticles = await models.Items.findAll({ order: [['createdAt', 'DESC']] })
-    return res.status(200).send(JSON.stringify({ products: itemProducts }))
-  })
-)
-
-// admin items approval/disapproval of post requests
-router.post(
-  '/items/approve',
-  isAdmin,
-  routesErrorHandler(async (req, res, next) => {
-    await models.Items.update(
-      {
-        approved: true
-      },
-      { where: { id: req.body.product_id } }
-    )
-    return res.status(302).redirect('/admin/items')
-  })
-)
-
-router.post(
-  '/items/disapprove',
-  isAdmin,
-  routesErrorHandler(async (req, res, next) => {
-    await models.Items.update(
-      {
-        approved: false
-      },
-      { where: { id: req.body.product_id } }
-    )
-    return res.status(302).redirect('/admin/news')
+    return res.status(200).send({ products: itemProducts })
   })
 )
 
@@ -58,8 +29,8 @@ router.get(
   '/users',
   isAdmin,
   routesErrorHandler(async (req, res, next) => {
-    const allUsers = await models.user.findAll({})
-    return res.status(200).send(JSON.stringify({ users: allUsers }))
+    const allUsers = await models.Users.findAll({})
+    return res.status(200).send({ users: allUsers })
   })
 )
 
@@ -68,7 +39,7 @@ router.post(
   '/user/make-admin',
   isAdmin,
   routesErrorHandler(async (req, res, next) => {
-    await models.user.update(
+    await models.Users.update(
       {
         is_admin: true
       },
@@ -82,7 +53,7 @@ router.post(
   '/user/revoke-admin',
   isAdmin,
   routesErrorHandler(async (req, res, next) => {
-    await models.user.update(
+    await models.Users.update(
       {
         is_admin: false
       },
@@ -98,7 +69,7 @@ router.get(
   isAdmin,
   routesErrorHandler(async (req, res, next) => {
     const categories = await models.Category.findAll({})
-    return res.status(200).send(JSON.stringify({ categories: categories }))
+    return res.status(200).send({ categories: categories })
   })
 )
 
