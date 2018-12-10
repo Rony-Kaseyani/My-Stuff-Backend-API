@@ -9,7 +9,7 @@ module.exports = (sequelize, DataTypes) => {
   )
   Ratings.associate = function(models) {
     // associations can be defined here
-    Ratings.belongsTo(models.user)
+    Ratings.belongsTo(models.Users)
     Ratings.belongsTo(models.Items)
   }
   return Ratings

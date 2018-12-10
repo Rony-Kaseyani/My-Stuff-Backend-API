@@ -30,7 +30,7 @@ router.get(
       order: [['createdAt', 'DESC']],
       where: { published: true }
     })
-    return res.status(200).send(JSON.stringify({ title: 'Search', list: searchResults }))
+    return res.status(200).send({ title: 'Search', list: searchResults })
   })
 )
 

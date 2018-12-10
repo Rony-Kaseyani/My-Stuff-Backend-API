@@ -6,9 +6,6 @@ const multer = require('multer')
 const showdown = require('showdown')
 const routesErrorHandler = require('./util').routesErrorHandler
 
-// init markdown to html converter
-const converter = new showdown.Converter()
-
 // current date
 const dateNow = Date.now() + '-'
 
@@ -23,10 +20,7 @@ const storage = multer.diskStorage({
 
 let imageUpload = multer({ storage: storage })
 
-/// item routes namespaced with /item
-// get form to add new item prodcut
-router.get('/add-item', isLoggedIn, async (req, res) => res.status(200))
-
+/// item routes namespaced with /items
 // post request for adding new new item prodcut
 router.post(
   '/add-item',
@@ -61,7 +55,7 @@ router.get(
     if (Math.round(productId)) {
       const itemProductRatings = await models.Ratings.findAll({
         where: {
-          ItemId: productId
+          itemId: productId
         }
       })
       let arrOfRatings = []
@@ -71,8 +65,8 @@ router.get(
       const itemProductRatingsCount = arrOfRatings.length
       const itemProductRatingsAvg = (arrOfRatings.reduce((p, c) => p + c, 0) / arrOfRatings.length).toFixed(1) || 0
       const itemProduct = await models.Items.findById(productId)
-      const user = await models.user.findById(itemProduct.userId)
-      const description = converter.makeHtml(itemProduct.description)
+      const user = await models.Users.findById(itemProduct.userId)
+      const description = itemProduct.description
       const seller = `${user.first_name} ${user.last_name}`
       const publishedDate = itemProduct.createdAt.toLocaleDateString('en-GB', {
         weekday: 'long',
@@ -80,16 +74,14 @@ router.get(
         month: 'long',
         day: 'numeric'
       })
-      return res.status(200).send(
-        JSON.stringify({
-          itemProduct,
-          description,
-          seller,
-          publishedDate,
-          itemProductRatingsAvg,
-          itemProductRatingsCount
-        })
-      )
+      return res.status(200).send({
+        itemProduct,
+        description,
+        seller,
+        publishedDate,
+        itemProductRatingsAvg,
+        itemProductRatingsCount
+      })
     } else {
       let err = new Error('The product you were looking for could not be found.')
       err.status = 404
@@ -118,7 +110,7 @@ router.get(
   isLoggedIn,
   routesErrorHandler(async (req, res, next) => {
     const product = await models.Items.findById(req.params.id)
-    return res.status(200).send(JSON.stringify({ product }))
+    return res.status(200).send({ product })
   })
 )
 
@@ -158,7 +150,7 @@ router.post(
 router.get(
   '/:category',
   routesErrorHandler(async (req, res, next) => {
-    const categoryInDb = await models.Category.findAll({ where: { title: req.params.category } })
+    const categoryInDb = await models.Categories.findAll({ where: { title: req.params.category } })
     if (categoryInDb.length) {
       const item = await models.Items.findAll({
         where: {
@@ -168,7 +160,7 @@ router.get(
         order: [['createdAt', 'DESC']]
       })
       res.locals.category_nav_title = req.params.category
-      return res.status(200).send(JSON.stringify({ title: req.params.category, list: item }))
+      return res.status(200).send({ title: req.params.category, list: item })
     } else {
       let err = new Error('The category you requested does not exist.')
       err.status = 404

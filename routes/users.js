@@ -2,6 +2,7 @@
 const router = require('express').Router()
 const models = require('../models/')
 const passport = require('passport')
+const jwt = require('jsonwebtoken')
 const isLoggedIn = require('./util').isLoggedIn
 const routesErrorHandler = require('./util').routesErrorHandler
 
@@ -16,44 +17,40 @@ router.get(
         userId: req.user.id
       }
     })
-    return res.status(200).send(JSON.stringify({ products: items }))
+    return res.status(200).send({ products: items })
   })
 )
-
-// getting login form
-router.get('/login', async (req, res) => res.status(200))
 
 // post request for login
 router.post(
   '/login',
-  passport.authenticate('local-signin', {
-    failureRedirect: '/users/login'
-  }),
-  async (req, res) => {
-    req.checkBody('email', 'Enter a valid email address').isEmail()
+  routesErrorHandler(async (req, res, next) => {
+    passport.authenticate('local-signin', async (err, user, info) => {
+      if (err || !user) {
+        const error = new Error('An Error occured')
+        return next(error)
+      }
 
-    if (req.user.is_admin === true) {
-      return res.status(302).redirect('/admin/items')
-    } else {
-      return res.status(302).redirect('/users/dashboard')
-    }
-  }
+      req.login(user, { session: false }, async error => {
+        if (error) return next(error)
+        //We don't want to store the sensitive information such as the
+        //user password in the token so we pick only the email and id
+        const body = { id: user.id, email: user.email }
+        //Sign the JWT token and populate the payload with the user email and id
+        const token = jwt.sign({ user: body }, 'top_secret')
+        //Send back the token to the user
+        return res.json({ token })
+      })
+    })(req, res, next)
+  })
 )
 
-// getting form for user registration
-router.get('/register', async (req, res) => res.status(200))
-
-// post request for registering user
-router.post(
-  '/register',
-  passport.authenticate('local-signup', {
-    failureRedirect: '/users/register'
-  }),
-  async (req, res) => {
-    await req.checkBody('email', 'Enter a valid email address').isEmail()
-    return res.status(302).redirect('/users/dashboard')
-  }
-)
+router.post('/register', passport.authenticate('local-signup', { session: false }), async (req, res, next) => {
+  return res.json({
+    message: 'Signup successful',
+    user: req.user
+  })
+})
 
 // logging user out and destroying session
 router.get('/logout', isLoggedIn, async (req, res) => {

@@ -3,11 +3,11 @@
 module.exports = {
   up: (queryInterface, Sequelize) => {
     return [
-      queryInterface.addColumn('ratings', 'userId', {
+      queryInterface.addColumn('messages', 'userId', {
         allowNull: false,
         type: Sequelize.INTEGER
       }),
-      queryInterface.addColumn('ratings', 'newsId', {
+      queryInterface.addColumn('messages', 'itemId', {
         allowNull: false,
         type: Sequelize.INTEGER
       })
@@ -15,6 +15,6 @@ module.exports = {
   },
 
   down: (queryInterface, Sequelize) => {
-    return [queryInterface.removeColumn('ratings', 'userId'), queryInterface.removeColumn('ratings', 'newsId')]
+    return [queryInterface.removeColumn('messages', 'userId'), queryInterface.removeColumn('messages', 'itemId')]
   }
 }
