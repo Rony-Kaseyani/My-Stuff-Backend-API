@@ -3,8 +3,15 @@ const router = require('express').Router()
 const isLoggedIn = require('./util').isLoggedIn
 const models = require('../models/')
 const multer = require('multer')
-const showdown = require('showdown')
 const routesErrorHandler = require('./util').routesErrorHandler
+
+router.get(
+  '/',
+  routesErrorHandler(async (req, res, next) => {
+    const allItems = await models.Items.findAll({})
+    return res.send({ products: allItems })
+  })
+)
 
 // current date
 const dateNow = Date.now() + '-'

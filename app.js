@@ -2,13 +2,9 @@
 const express = require('express')
 const compression = require('compression')
 const bodyParser = require('body-parser')
+const cookieParser = require('cookie-parser')
 const passport = require('passport')
-const logger = require('morgan')
-const methodOverride = require('method-override')
-const errorhandler = require('errorhandler')
 const models = require('./models')
-const session = require('express-session')
-const validator = require('express-validator')
 
 // init express app
 const app = express()
@@ -17,42 +13,14 @@ const isProduction = process.env.NODE_ENV === 'production'
 
 /// express config
 app.use(compression())
-app.use(logger('dev'))
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
-app.use(validator())
-app.use(methodOverride())
-
-app.use(
-  session({
-    secret: 'keyboard cat',
-    resave: false,
-    saveUninitialized: false
-  })
-)
-
+app.use(cookieParser())
 app.use(passport.initialize())
-app.use(passport.session())
-
-app.use(async (req, res, next) => {
-  // checking whether user is admin
-  app.locals.admin_user = req.user && req.user.is_admin
-  // checking whether user is logged out
-  app.locals.logged_out = !req.isAuthenticated()
-  // checking whether user is logged in
-  app.locals.logged_in = req.isAuthenticated()
-  // retrieving all categories to be used in our views to display navigation etc.
-  app.locals.categories = await models.Categories.findAll()
-  next()
-})
 app.use(require('./routes'))
 
 //load passport strategies
 require('./config/passport/passport.js')(passport, models.Users)
-
-if (!isProduction) {
-  app.use(errorhandler())
-}
 
 /// catch 404 and forward to error handler
 app.use((req, res, next) => {
@@ -67,6 +35,7 @@ app.use((req, res, next) => {
 // will print stacktrace
 if (!isProduction) {
   app.use((err, req, res, next) => {
+    console.error(err)
     console.log(err.stack)
 
     res.status(err.status || 500)
