@@ -22,13 +22,18 @@ router.get(
   routesErrorHandler(async (req, res, next) => {
     const searchResults = await models.Items.findAll({
       where: models.sequelize.where(
-        models.sequelize.fn('concat', models.sequelize.col('description'), models.sequelize.col('title')),
+        models.sequelize.fn(
+          'concat',
+          models.sequelize.col('description'),
+          models.sequelize.col('title'),
+          models.sequelize.col('city'),
+          models.sequelize.col('category')
+        ),
         {
           $like: `%${req.query.q}%`
         }
       ),
-      order: [['createdAt', 'DESC']],
-      where: { published: true }
+      order: [['createdAt', 'DESC']]
     })
     return res.status(200).send({ title: 'Search', list: searchResults })
   })
