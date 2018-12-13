@@ -2,7 +2,6 @@
 const router = require('express').Router()
 const isLoggedIn = require('./util').isLoggedIn
 const models = require('../models/')
-const multer = require('multer')
 const routesErrorHandler = require('./util').routesErrorHandler
 
 router.get(
@@ -13,26 +12,11 @@ router.get(
   })
 )
 
-// current date
-const dateNow = Date.now() + '-'
-
-//image upload directory
-const storage = multer.diskStorage({
-  destination: './public/product_images/',
-  filename: function(req, file, cb) {
-    //Get the new_file_name property sent from client
-    cb(null, dateNow + file.originalname)
-  }
-})
-
-let imageUpload = multer({ storage: storage })
-
 /// item routes namespaced with /items
 // post request for adding new new item prodcut
 router.post(
   '/add-item',
   isLoggedIn,
-  imageUpload.single('image_file'),
   routesErrorHandler(async (req, res, next) => {
     const isPublished = true
     const isReported = false
@@ -44,13 +28,12 @@ router.post(
       condition: req.body.condition,
       price: req.body.price,
       city: req.body.city,
-      image: dateNow + req.file.originalname,
       published: isPublished,
       reported: isReported,
       userId: sessionID
     })
 
-    return res.status(302).redirect('/')
+    return res.status(200)
   })
 )
 
@@ -69,11 +52,15 @@ router.get(
       itemProductRatings.forEach(rating => {
         arrOfRatings.push(rating.dataValues.rating)
       })
-      const itemProductRatingsCount = arrOfRatings.length
-      const itemProductRatingsAvg = (arrOfRatings.reduce((p, c) => p + c, 0) / arrOfRatings.length).toFixed(1) || 0
+      const ratingsCount = arrOfRatings.length
+      const ratingsAvg = (arrOfRatings.reduce((p, c) => p + c, 0) / arrOfRatings.length).toFixed(1) || 0
       const itemProduct = await models.Items.findById(productId)
-      const user = await models.Users.findById(itemProduct.userId)
+      const user = await models.Users.findById(itemProduct.UserId)
       const description = itemProduct.description
+      const title = itemProduct.title
+      const price = itemProduct.price
+      const condition = itemProduct.condition
+      const city = itemProduct.city
       const seller = `${user.first_name} ${user.last_name}`
       const publishedDate = itemProduct.createdAt.toLocaleDateString('en-GB', {
         weekday: 'long',
@@ -82,12 +69,15 @@ router.get(
         day: 'numeric'
       })
       return res.status(200).send({
-        itemProduct,
+        title,
+        price,
+        condition,
         description,
         seller,
+        city,
         publishedDate,
-        itemProductRatingsAvg,
-        itemProductRatingsCount
+        ratingsAvg,
+        ratingsCount
       })
     } else {
       let err = new Error('The product you were looking for could not be found.')
@@ -107,7 +97,7 @@ router.post(
       userId: req.user.id,
       ItemId: req.params.id
     })
-    res.status(302).redirect(`/items/product/${req.params.id}`)
+    res.status(200)
   })
 )
 
@@ -125,7 +115,6 @@ router.get(
 router.post(
   '/product/:id/edit',
   isLoggedIn,
-  imageUpload.single('imagefile'),
   routesErrorHandler(async (req, res, next) => {
     const product = await models.Items.findById(req.params.id)
     await models.Items.update(
@@ -135,12 +124,11 @@ router.post(
         description: req.body.description,
         condition: req.body.condition,
         price: req.body.price,
-        city: req.body.city,
-        image: req.file ? dateNow + req.file.originalname : product.image
+        city: req.body.city
       },
       { where: { id: req.params.id, userId: req.user.id } }
     )
-    return res.status(302).redirect('/users/dashboard')
+    return res.status(200)
   })
 )
 
@@ -149,7 +137,7 @@ router.post(
   isLoggedIn,
   routesErrorHandler(async (req, res, next) => {
     await models.Items.destroy({ where: { id: req.params.id, userId: req.user.id } })
-    return res.status(302).redirect('/users/dashboard')
+    return res.status(200)
   })
 )
 

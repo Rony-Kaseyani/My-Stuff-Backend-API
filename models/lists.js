@@ -3,7 +3,7 @@ module.exports = (sequelize, DataTypes) => {
   const Lists = sequelize.define(
     'Lists',
     {
-      playlist: DataTypes.STRING
+      list: DataTypes.STRING
     },
     {}
   )

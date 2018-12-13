@@ -20,7 +20,7 @@ router.post(
   isAdmin,
   routesErrorHandler(async (req, res, next) => {
     await models.Items.destroy({ where: { id: req.body.product_id } })
-    return res.status(302).redirect('/admin/items')
+    return res.status(200)
   })
 )
 
@@ -45,7 +45,7 @@ router.post(
       },
       { where: { id: req.body.user_id } }
     )
-    return res.status(302).redirect('/admin/users')
+    return res.status(200)
   })
 )
 
@@ -59,7 +59,7 @@ router.post(
       },
       { where: { id: req.body.user_id } }
     )
-    return res.status(302).redirect('/admin/users')
+    return res.status(200)
   })
 )
 
@@ -85,7 +85,7 @@ router.post(
       title: req.body.title,
       description: req.body.description
     })
-    return res.status(302).redirect('/admin/categories')
+    return res.status(200)
   })
 )
 

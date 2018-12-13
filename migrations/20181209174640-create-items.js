@@ -26,9 +26,6 @@ module.exports = {
       city: {
         type: Sequelize.STRING
       },
-      image: {
-        type: Sequelize.STRING
-      },
       published: {
         type: Sequelize.BOOLEAN
       },

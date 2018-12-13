@@ -143,7 +143,7 @@ module.exports = function(passport, user) {
       {
         //secret we used to sign our JWT
         secretOrKey: 'top_secret',
-        //we expect the user to send the token as a query paramater with the name 'secret_token'
+        //we are extracting the token from the query string parameter secret_token
         jwtFromRequest: ExtractJWT.fromUrlQueryParameter('secret_token')
       },
       async (token, done) => {

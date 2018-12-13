@@ -9,7 +9,6 @@ module.exports = (sequelize, DataTypes) => {
       condition: DataTypes.STRING,
       price: DataTypes.DECIMAL(10, 2),
       city: DataTypes.STRING,
-      image: DataTypes.STRING,
       published: DataTypes.BOOLEAN,
       reported: DataTypes.BOOLEAN
     },

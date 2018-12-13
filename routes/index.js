@@ -34,9 +34,6 @@ router.get(
   })
 )
 
-// post request action for form in layout sidebar
-router.post('/search', async (req, res) => res.status(302).redirect(`/search?q=${req.body.query}`))
-
 /// delegating model specific routes to separate files for better organisation
 // admin routes
 router.use('/admin', require('./admin'))

@@ -37,11 +37,9 @@ router.post(
         //user password in the token so we pick only the email and id
         const body = { id: user.id, email: user.email }
         //Sign the JWT token and populate the payload with the user email and id
-        const token = jwt.sign({ user: body }, 'top_secret', {
-          expiresIn: '1h'
-        })
+        const token = jwt.sign({ user: body }, 'top_secret', { expiresIn: '1y' })
         //Send back the token to the user
-        return res.status(200).cookie('token', token, { httpOnly: true })
+        return res.send({ token }).sendStatus(200)
       })
     })(req, res, next)
   })
@@ -58,7 +56,36 @@ router.post('/register', passport.authenticate('local-signup', { session: false 
 router.get('/logout', isLoggedIn, async (req, res) => {
   req.session.destroy()
   req.logout()
-  return res.status(302).redirect('/')
+  return res.status(200)
 })
+
+// add item to user favorites list
+router.post(
+  '/product/:id/add-favorite',
+  isLoggedIn,
+  routesErrorHandler(async (req, res, next) => {
+    const favorite = 'Favorite'
+    await models.Lists.create({
+      list: favorite,
+      userId: req.user.id,
+      itemId: req.params.id
+    })
+    res.status(200)
+  })
+)
+
+// send user a message about their item
+router.post(
+  '/product/:id/send-message',
+  isLoggedIn,
+  routesErrorHandler(async (req, res, next) => {
+    await models.Messages.create({
+      message: req.body.message,
+      userId: req.user.id,
+      itemId: req.params.id
+    })
+    res.status(200)
+  })
+)
 
 module.exports = router

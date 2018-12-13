@@ -8,7 +8,7 @@ module.exports = {
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      playlist: {
+      list: {
         type: Sequelize.STRING
       },
       createdAt: {
